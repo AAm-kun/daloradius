@@ -9,32 +9,12 @@ services:
     environment:
       - MYSQL_DATABASE=radius
       - MYSQL_USER=radius
-      - MYSQL_PASSWORD=radiusdbpw
+      - MYSQL_PASSWORD=radpass
       - MYSQL_ROOT_PASSWORD=radiusrootdbpw
     volumes:
       - "./data/mysql:/var/lib/mysql"
 
-  freeradius:
-    build:
-      context: .
-      dockerfile: Dockerfile-freeradius
-    image: freerad:latest
-    ports:
-      - "1812:1812/udp"
-      - "1813:1813/udp"
-    #volumes:
-      #- "./configs/radius/users:/etc/raddb/users"
-      #- "./configs/radius/clients.conf:/etc/raddb/clients.conf"
-    environment:
-      - DB_NAME=radius
-      - DB_HOST=mysql
-      - DB_USER=radius
-      - DB_PASS=radpass
-      - DB_PORT=3306
-      #- RADIUS_KEY=testing123
-      #- RAD_CLIENTS=10.0.0.0/24
-      - RAD_DEBUG=yes 
-
+      
   radius-web:
     build: .
     container_name: radius-web
@@ -61,3 +41,35 @@ services:
 
     volumes:
       - ./data/daloradius:/data
+
+
+  freeradius:
+    build:
+      context: .
+      dockerfile: Dockerfile-freeradius
+    image: freerad:latest
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    #volumes:
+      #- "./configs/radius/users:/etc/raddb/users"
+      #- "./configs/radius/clients.conf:/etc/raddb/clients.conf"
+    environment:
+      - DB_NAME=radius
+      - DB_HOST=mysql
+      - DB_USER=radius
+      - DB_PASS=radpass
+      - DB_PORT=3306
+      #- RADIUS_KEY=testing123
+      #- RAD_CLIENTS=10.0.0.0/24
+      - RAD_DEBUG=yes 
+    depends_on:
+      - radius-web
+
+    phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
