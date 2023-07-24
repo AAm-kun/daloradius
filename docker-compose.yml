@@ -46,7 +46,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-freeradius
-    image: freerad:latest
+    #image: freerad:latest
+    container_name: freeradius
+    restart: unless-stopped
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
