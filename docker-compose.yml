@@ -3,8 +3,8 @@ version: "3"
 services:
 
   radius-mysql:
-    image: mariadb:10
-    container_name: radius-mysql
+    image: mariadb:lts-jammy
+    container_name: mysql
     restart: unless-stopped
     environment:
       - MYSQL_DATABASE=radius
@@ -14,29 +14,26 @@ services:
     volumes:
       - "./data/mysql:/var/lib/mysql"
 
-  radius:
-    container_name: radius
+  freeradius:
     build:
       context: .
       dockerfile: Dockerfile-freeradius
-    restart: unless-stopped
-    depends_on: 
-      - radius-mysql
+    image: freerad:latest
     ports:
-      - '1812:1812/udp'
-      - '1813:1813/udp'
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    #volumes:
+      #- "./configs/radius/users:/etc/raddb/users"
+      #- "./configs/radius/clients.conf:/etc/raddb/clients.conf"
     environment:
-      - MYSQL_HOST=radius-mysql
-      - MYSQL_PORT=3306
-      - MYSQL_DATABASE=radius
-      - MYSQL_USER=radius
-      - MYSQL_PASSWORD=radiusdbpw
-      # Optional settings
-      - DEFAULT_CLIENT_SECRET=testing123
-    volumes:
-      - ./data/freeradius:/data
-    # If you want to disable debug output, remove the command parameter
-    command: -X
+      - DB_NAME=radius
+      - DB_HOST=mysql
+      - DB_USER=radius
+      - DB_PASS=radpass
+      - DB_PORT=3306
+      #- RADIUS_KEY=testing123
+      #- RAD_CLIENTS=10.0.0.0/24
+      - RAD_DEBUG=yes 
 
   radius-web:
     build: .
@@ -46,14 +43,14 @@ services:
       - radius
       - radius-mysql
     ports:
-      - '80:80'
+     # - '80:80'
       - '8000:8000'
     environment:
-      - MYSQL_HOST=radius-mysql
+      - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
       - MYSQL_DATABASE=radius
       - MYSQL_USER=radius
-      - MYSQL_PASSWORD=radiusdbpw
+      - MYSQL_PASSWORD=radpass
       # Optional Settings:
       - DEFAULT_CLIENT_SECRET=testing123
       - DEFAULT_FREERADIUS_SERVER=radius
