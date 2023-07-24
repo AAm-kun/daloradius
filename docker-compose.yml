@@ -20,7 +20,6 @@ services:
     container_name: radius-web
     restart: unless-stopped
     depends_on:
-      - radius
       - radius-mysql
     ports:
      # - '80:80'
@@ -66,7 +65,7 @@ services:
     depends_on:
       - radius-web
 
-    phpmyadmin:
+  phpmyadmin:
     image: phpmyadmin
     restart: always
     ports:
